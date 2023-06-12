@@ -1,0 +1,20 @@
+.square {
+    width: 4vw;
+    height: 8vh;
+    border-radius: 0.5vh;
+    background-color: violet;
+    padding: 0.5vh;
+    border-style: solid;
+    border-width: 0.1vh;
+    z-index: 99;
+  }
+
+  .move {
+    transform: translateY(80vh);
+    transition: transform 2000ms linear 0s;
+  }
+
+  .start-from-top{
+    position: absolute;
+    top: 0vh;
+  }
