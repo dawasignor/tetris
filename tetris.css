@@ -10,11 +10,12 @@
   }
 
   .move {
-    transform: translateY(80vh);
-    transition: transform 2000ms linear 0s;
+    transform: translateY(0vh);
+    transition: transform 0s none 0s;
   }
 
   .start-from-top{
     position: absolute;
     top: 0vh;
-  }
+    }
+ 

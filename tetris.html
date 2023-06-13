@@ -16,13 +16,13 @@
     <div class = "container-fluid p-0">
         <div class = "row align-items-start">
             <div id="box1" style="height: 100vh; width: 25vw; background-color:yellow;">
-                
+                Score: <p id="Score"></p>
             </div>
             <div id="left-wall" style="background-color:gray; height: 100vh; width: 5vw;">     
             </div>
             <div class="centerBox " style=" background-color:  aquamarine;height: 100vh; width: 40vw;">
                 <div class="container-fluid p-0" id="play-area">
-                    <div class="container-fluid  active-block p-0" id ="1">
+                    <div class="container-fluid  active-block p-0 " id ="1" style = "position: absolute;">
                         <div class = "row align-items-start">
                             <div class="col-lg-2 square top-left"></div>
                             <div class="col-lg-2 square top-right"></div>
@@ -39,7 +39,9 @@
             </div>
 
             <div class="box3" style=" height: 100vh; width: 25vw; background-color:pink;">
-                <button onclick="moveblock()">Move</button>
+                Press Enter to start!
+            </br>
+                TODO : Leader Board will come here
             </div>
         </div>
     </div>
@@ -49,53 +51,146 @@
 
 <script>
 
+    const startColumn = 1;
+    const leftWallVW = 30;
+    let row = 1
+    let col = 1
+    let floor = 10
+    //introduce lattice variable to take care of the overlap bug - limit left and right; 
+    //also use it for clearing bot row
+    let floorArray =[10,10,10,10,10,10,10,10,10,10]
     let ActiveBlockId=1;
     let activeBlock = document.querySelector(".active-block");
+    var gameStart;
 
     //drawbg();
+
+
     function start(){
-        setInterval(updateBlockID,2000);
+        gameStart = setInterval(moveblock,500);
+        updateScore()
     }
+    function end(){
+        clearInterval(gameTime);
+        clearInterval(gameStart);
+    }
+
+    function updateScore(){
+        document.getElementById("Score").innerHTML = "<h3>"+(ActiveBlockId-1)+"</h3>";
+    }
+
+    const gameTime = setInterval(function(){ 
+        if(row>floor){
+            updateActiveBlock()
+        }
+        if(floor<0){
+            console.log("GAMEOVER!");
+            activeBlock.classList.remove("move");
+            const gameOverDiv = document.createElement("div");
+            gameOverDiv.innerHTML ="<h3>GAME OVER!</h3>";
+            document.getElementById("box1").append(gameOverDiv);
+            document.getElementById("Score").innerHTML = "<h3>"+(ActiveBlockId-1)+"</h3>";
+            end();
+        }
+    },100);
     
     document.getElementById("play-area").addEventListener("transitionend",function(eventEnd){if(eventEnd.propertyName == 'transform'){console.log("calling updateActiveBlock");
         updateActiveBlock()}}); 
 
-    window.addEventListener("keydown",moveRightOrLeft,false);
+    window.addEventListener("keydown",keyboardContoller,false);
 
-    function moveRightOrLeft(evt){
+    function keyboardContoller(evt){
         event.preventDefault();
 
         switch(evt.key){
             case "ArrowLeft":
-                console.log("Left");
+                if(col>1){
+                    col-=1;
+                    floor = getFloor();
+                    document.querySelector(".active-block").style.left = ""+(leftWallVW+(col-1)*4)+"vw"; //only if type = square
+
+                }
             break;
             case "ArrowRight":
-                console.log("Right");
+            if(col<9){
+                col+=1; //add move dynamically
+                floor = getFloor();
+                console.log(document.querySelector(".active-block").classList);
+
+                document.querySelector(".active-block").style.left = ""+(leftWallVW+(col-1)*4)+"vw"; //only if type = square
+            }
             break;
+            case "Enter":
+                start();
+                break;
         }
+        
+
     }
     function updateBlockID(){
         activeBlock = document.querySelector(".active-block");
-        console.log(activeBlock.id);
+        console.log("ID = "+activeBlock.id);
                
     }
 
+    function getAffectedCols(){
+        //only if type = square
+        var cols = [col,col+1];
+        console.log(cols);
+        return cols;
+
+    }
+    function getFloor(){
+        var cols= getAffectedCols();
+        var min=10;
+        //parse through list of affected cols and update the floorArray
+        cols.forEach((column) => {
+            min = Math.min(min,floorArray[column-1]);    
+        });
+        return min;
+    }
+
+    function updatefloorArray(){
+        var cols= getAffectedCols();
+        var floor = getFloor();
+        console.log("floor : "+floor);
+        floor -=2; //floor array is updated differently for different blocks
+        //parse through list of affected cols and update the floorArray
+        cols.forEach((column) => {
+            floorArray[column-1] = floor;    
+        })
+    }
+    
+
     function updateActiveBlock(){
-        //setTimeout(() =>{ console.log("new block")},500);
+
+        
+        updatefloorArray();
+
+        
+        console.log(floorArray);
+
+        floor = floorArray[startColumn];
         el = document.querySelector(".active-block");
         el.classList.remove("active-block")
+        //create abstract factory
         addActiveBlock();
         el = document.querySelector(".active-block");
-        setTimeout(() => {el.classList.add("move");},200);
         ActiveBlockId++;
+        updateScore();
+        row = 1;
+        col = 1;
+
 
         
     }
     
-    function moveblock(){       
-    document.getElementById("1").classList.add("move");
-    start();
+    function moveblock(){  
+
+    document.querySelector(".active-block").style.transform = "translateY("+(row*8)+"vh)";
+    row++;
     }
+
 
     
     
