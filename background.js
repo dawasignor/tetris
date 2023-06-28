@@ -1,19 +1,59 @@
 let blockCount=0;
 function drawbg(){
-    str="";
-    document.getElementById("play-area").innerHTML = "";
-    for(row=1; row<=12; row++){
-        str+= "<div class=\"row\" id = \"row-"+row+"\" style =\"visiblity:hidden;\">";
-        for(col=1;col<=10;col++){
-            str+="<div class=\"col-lg-1\" style=\"background-color: #9723C9; height: 8vh; width: 4vw; z-index: 1;\"> </div>";
+    let counter=0;
+    const ctx = document.getElementById("play-area").getContext('2d');
+    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+    ctx.fillStyle = '#87CEEB';
+    //ctx.fillStyle = getColor(colorNum);
+    for(i=0;i<ROWS;i++){
+        counter=0;
+        for(j=0;j<COLS;j++){
+            if(lattice[i][j]==1){
+                counter++;
+                ctx.fillRect(j, i, BLOCK_WIDTH, BLOCK_HEIGHT);
+                ctx.stroke();
+                ctx.fill();
+            }
         }
-        str+=" </div>";
-        
+        if(counter==COLS){
+            clearLatticeRow(i,lattice);
+        }
     }
-    str+= "<div class=\"row\" id = \"row-"+13+"\">";
-    str+="<div class=\"col-lg-12\" style=\"background-color:black; height: 4vh; width: 40vw;\"> </div>";
-    document.getElementById("play-area").innerHTML = str;
+
 }
+
+function getColor(colorNum){
+    let color='';
+    switch (colorNum)
+    {
+        case 1:
+        color= '#87CEEB';
+        break;
+        case 2:
+        color = 'E3A018'
+        break;
+        case 3:
+        color = '7FBC8C'
+        break;
+        case 4:
+        color = 'FFC0CB'
+        break;
+
+    }
+    return color;
+}
+
+function clearLatticeRow(row,lattice){
+    for(i=row;i>0;i--){
+        for(j=0;j<COLS;j++){
+            if(i!=0){
+                lattice[i][j] = lattice[i-1][j];
+            }
+        }
+    }
+    drawbg(lattice);
+}
+
 
 function addBlock(){
     let randomNumber = Math.floor(Math.random()*4) +1;

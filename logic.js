@@ -10,12 +10,12 @@ function moveblockSide(){
     
 }
 
-function initLattice(){
+function initLattice(ROWS,COLS){
     let lattice = [];
     var i,j;
-    for(i=0;i<12;i++){
+    for(i=0;i<ROWS;i++){
         lattice[i] = [];
-        for(j=0;j<10;j++)
+        for(j=0;j<COLS;j++)
         {
             lattice[i][j]=0;
         }

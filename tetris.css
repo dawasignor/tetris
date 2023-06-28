@@ -1,3 +1,13 @@
+@font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/s/pressstart2p/v14/e3t4euO8T-267oIAQAu6jDQyK3nVivM.woff2) format('woff2');
+} 
+* {
+  font-family: 'Press Start 2P', cursive;
+}
+
 .square {
     width: 4vw;
     height: 8vh;

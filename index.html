@@ -11,7 +11,9 @@
 
       <script type="text/javascript" src="background.js"></script>
       <script type="text/javascript" src="logic.js"></script>
-      
+
+      <script type="text/javascript" src="constants.js"></script>
+
 </head>
 <body>
     <div class = "container-fluid p-0">
@@ -21,11 +23,9 @@
             </div>
             <div id="left-wall" style="background-color:black; height: 100vh; width: 5vw;">     
             </div>
-            <div class="centerBox " style=" background-color:  #9723C9 ;height: 100vh; width: 40vw;">
-                <div class="container-fluid p-0" id="play-area">
-                    
-                </div>
-                <div style="background-color:black; position: absolute; top: 96vh; left: 29vw; height: 4vh; width: 40vw; border-style: dashed; border-width: 1px; padding-left: 0px;" ></div>
+            <div class="centerBox " style=" background-color:  #9723C9 ;height: 100vh; width: 39.6vw; padding-left: 0px; padding-right: 0px;">
+                <canvas id="play-area" class = "board"></canvas>
+                <div style="background-color:black; position: absolute; top: 92.5vh; left: 29.1vw; height: 5vh; width: 39.7vw; border-style: dashed; border-width: 1px; padding-left: 0px;" ></div>
             </div>
             <div id="right-wall" style="background-color:black; height: 100vh; width: 5vw;">     
             </div>
@@ -47,21 +47,51 @@
     const startColumn = 1;
 const leftWallVW = 30;
 const horizontalUnit = 4;
-const verticalUnit = 8;
-    var row = 1;
+const verticalUnit = 8;//TODO var vs let vs const
+const COLS = 18;
+const ROWS = 20;
+
+const SCALE_FACTOR = 30;
+const BLOCK_HEIGHT = 1;
+const BLOCK_WIDTH = 1;
+
+let orientation=1;
+
+    const ctx = document.getElementById("play-area").getContext('2d');
+
+    ctx.canvas.width = COLS * SCALE_FACTOR;
+    ctx.canvas.height = ROWS * SCALE_FACTOR;
+
+    ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
+    ctx.lineWidth = 0.1;
+    // ctx.fillStyle = '#87CEEB';
+    // ctx.roundRect(5, 5, BLOCK_WIDTH, BLOCK_HEIGHT,[0.1]);
+    // ctx.stroke();
+    // ctx.fill();
+    ctx.fillRect(COLS-1, 0, BLOCK_WIDTH, BLOCK_HEIGHT);
+    ctx.fillRect(COLS-1, ROWS-1, BLOCK_WIDTH, BLOCK_HEIGHT);
+    ctx.fillRect(0, ROWS-1, BLOCK_WIDTH, BLOCK_HEIGHT);
+    console.log(screen.width);
+    console.log(screen.height);
+    console.log(give);
+    
+
+
+    let row = 1;
     let blockType = 0;
     let gameOver = false;
-    var col = 1;
+    let col = 1;
     let floor = 10
     
     var lattice;
-    lattice = initLattice();
+    lattice = initLattice(ROWS,COLS);
     let floorArray =[10,10,10,10,10,10,10,10,10,10]
     let ActiveBlockId=1;
     let activeBlock = document.querySelector(".active-block");
     var gameStart =0;
+    let activeBlockLattice;
 
-    drawbg();
+    drawbg(lattice);
 
 
     function start(){
@@ -116,7 +146,7 @@ const verticalUnit = 8;
                 }
                 break;
             case "ArrowRight":
-            if(col<=9 && !gameOver && canMoveSide("right")){
+            if(col<=COLS-1 && !gameOver && canMoveSide("right")){
                 updateLattice_side("right");
                 col+=1; //add move dynamically
                 //moveblockSide("right");
@@ -136,58 +166,20 @@ const verticalUnit = 8;
                 break;
             case " ":
                 console.log("in space");
-            activeBlock.style.transform = "rotate(90deg);";
+                rotateBlockLattice();
                 break;
         }
         
 
     }
     function updateBlockID(){
-        activeBlock = document.querySelector(".active-block");
+        
         console.log("ID = "+activeBlock.id);
                
     }
-    //remove
-    function getAffectedCols(){
-        switch(1){
-        case 1:
-        var cols = [col,col+1];
-        console.log(cols);
-        return cols;
-        break;
+    
 
-        }
 
-    }
-    function getFloor(){
-        var cols= getAffectedCols();
-        var min=10;
-        //parse through list of affected cols and update the floorArray
-        cols.forEach((column) => {
-            min = Math.min(min,floorArray[column-1]);    
-        });
-        return min;
-    }
-
-    function updatefloorArray(){
-        var cols= getAffectedCols();
-        var floor = getFloor();
-        console.log("floor : "+floor);
-        floor -=getUpdateForFloor(); //floor array is updated differently for different blocks
-        //parse through list of affected cols and update the floorArray
-        cols.forEach((column) => {
-            floorArray[column-1] = floor;    
-        })
-    }
-    function getUpdateForFloor(){
-        switch(blockType){
-            case 1: return 2; break;
-            case 2: return 4; break;
-            case 3: return 3; break;
-            case 4: return 3; break;
-        }
-        
-    }
 
     
     //update lattice
@@ -195,12 +187,10 @@ const verticalUnit = 8;
         
 
         
-        updatefloorArray();
 
         
         console.log(floorArray);
 
-        floor = floorArray[startColumn];
         el = document.querySelector(".active-block");
         if(el != null){el.classList.remove("active-block")}
         //randomly call shapes
@@ -208,41 +198,36 @@ const verticalUnit = 8;
         //
         ////
           //
-        //decide the limits and lattice for the game
         blockType=addBlock();
         console.log(blockType);
-        //addBlockType1();
         el = document.querySelector(".active-block");
         ActiveBlockId++;
+        activeBlock = document.querySelector(".active-block");
         updateBlockID();
         updateScore();
         col = 1;
         row = 1;
+        orientation = 1;
         updateLattice_newBlock();
         isGameOver()
+        drawbg(lattice);
 
         
     }
     
 function moveblockDown(){  
-if(canMoveDown()){
-updateLattice_down();  
-console.log("in move")
-activeBlock.style.transform = "translateY("+(row*8)+"vh)";
-row++;
-console.log("Floor " + getFloor() + "  -- Row: "+row);
-} else {
-        refreshBlock();
-    }
+    if(canMoveDown()){
+    updateLattice_down();  
+    row++;
+    drawbg(lattice);
+    } else {
+            refreshBlock();
+        }
 }
 
-function moveblockSide(side){
-    console.log("in move")
-let unit = side=="right"?horizontalUnit:-horizontalUnit;
-activeBlock.style.transform = "translateX("+((col-1)*unit)+"vw)";
-}
 
-function getArrayforBlock(type){
+
+function getArrayforBlock(type,block_rotation){
     let blockLattice = [];
     switch(type){
         case 1:
@@ -250,65 +235,120 @@ function getArrayforBlock(type){
             blockLattice[1] = [1,1];
             break;
         case 2:
-            blockLattice[0] = [1];
-            blockLattice[1] = [1];
-            blockLattice[2] = [1];
-            blockLattice[3] = [1];
+            switch(block_rotation%4){
+                case 1:
+                case 3:
+                blockLattice[0] = [1,0,0,0];
+                blockLattice[1] = [1,0,0,0];
+                blockLattice[2] = [1,0,0,0];
+                blockLattice[3] = [1,0,0,0];
+                break;
+
+                case 2:
+                case 0:
+                blockLattice[0] = [1,1,1,1];
+                blockLattice[1] = [0,0,0,0];
+                blockLattice[2] = [0,0,0,0];
+                blockLattice[3] = [0,0,0,0];
+                break;
+            }
+            
             break;
         case 3:
-            blockLattice[0] = [1,0];
-            blockLattice[1] = [1,0];
-            blockLattice[2] = [1,1];
+        switch(block_rotation%4){
+            case 1: 
+            blockLattice[0] = [1,0,0];
+            blockLattice[1] = [1,0,0];
+            blockLattice[2] = [1,1,0];
+            break;
+            case 2: 
+            blockLattice[0] = [1,1,1];
+            blockLattice[1] = [1,0,0];
+            blockLattice[2] = [0,0,0];
+            break;
+            case 3: 
+            blockLattice[0] = [0,1,1];
+            blockLattice[1] = [0,0,1];
+            blockLattice[2] = [0,0,1];
+            break;
+            case 0: 
+            blockLattice[0] = [0,0,1];
+            blockLattice[1] = [1,1,1];
+            blockLattice[2] = [0,0,0];
+            break;
+        }
             break;
         case 4:
-            blockLattice[0] = [1,0];
-            blockLattice[1] = [1,1];
-            blockLattice[2] = [1,0];
+            switch(block_rotation%4){
+                case 1:
+                blockLattice[0] = [1,0,0];
+                blockLattice[1] = [1,1,0];
+                blockLattice[2] = [1,0,0];
+                break;
+                case 2:
+                blockLattice[0] = [1,1,1];
+                blockLattice[1] = [0,1,0];
+                blockLattice[2] = [0,0,0];
+                break;
+                case 3:
+                blockLattice[0] = [0,1,0];
+                blockLattice[1] = [1,1,0];
+                blockLattice[2] = [0,1,0];
+                break;
+                case 0:
+                blockLattice[0] = [0,1,0];
+                blockLattice[1] = [1,1,1];
+                blockLattice[2] = [0,0,0];
+                break;
+            }
+
             break;            
     }
     return blockLattice;
 }
 
 function updateLattice_newBlock(){
-    let blockLattice = getArrayforBlock(blockType);
+    activeBlockLattice = getArrayforBlock(blockType,orientation);
+    console.log(row);
+    console.log(col);
     for(var i=0;i<lattice.length;i++){
         for(var j=0;j<lattice[i].length;j++){
-            if(i<blockLattice.length){
-                if(j<blockLattice[i].length){
-                    lattice[i][j] = blockLattice[i][j];
+            if(i<activeBlockLattice.length){
+                if(j<activeBlockLattice[i].length){
+                    lattice[i+row-1][j+col-1] = activeBlockLattice[i][j];
                 }
             }
 
         }
     }
-    console.log(lattice);
+    drawbg(lattice);
 
 }
 function updateLattice_down(){
-    let blockLattice = getArrayforBlock(blockType);
+    let blockLattice = activeBlockLattice;
     blockRowSize = blockLattice.length;
     blockColSize = blockLattice[0].length;
     for(var i=(row+blockRowSize-2);i>=(row-1);i--){
         for(var j=(col-1);j<(col+blockColSize-1);j++){
                     console.log("i : "+i+"  j:"+j);
-                    if(i!=11 && lattice[i+1][j]!=1){
+                    if(i!=ROWS && lattice[i+1][j]!=1){
                     lattice[i+1][j] = lattice[i][j];
                     lattice[i][j] = 0;
                     }
         }
     }
-    console.log(lattice);
+    drawbg(lattice);
 }
 
 function updateLattice_side(side){
     let right = side=="right"?true:false;
-    let blockLattice = getArrayforBlock(blockType);
+    let blockLattice = activeBlockLattice;
     var i,j;
     blockRowSize = blockLattice.length;
     blockColSize = blockLattice[0].length;
     for(i=(row+blockRowSize-2);i>=(row-1);i--){
         if(right){
-            if((col+blockColSize-1)<10){
+            if((col+blockColSize-1)<COLS){
                 for(var j=(col+blockColSize-2);j>=(col-1);j--){
                     lattice[i][j+1] = lattice[i][j];
                     if(j==(col-1)){
@@ -327,31 +367,12 @@ function updateLattice_side(side){
             }
         }
     }
-    console.log(lattice);
+    drawbg(lattice);
 }
-// function updateLattice_down(){
-//     let blockLattice = getArrayforBlock(blockType);
-//     blockRowSize = blockLattice.length;
-//     blockColSize = blockLattice[0].length;
-//     for(var i=(lattice.length-1);i>=0;i--){
-//         for(var j=0;j<lattice[i].length;j++){
-//             if(i>=(row-1) && i<(row+blockRowSize-1) ){
-//                 if(j>=(col-1) && j<(col+blockColSize-1)){
-//                     console.log("i : "+i+"  j:"+j);
-//                     if(i!=11){
-//                     lattice[i+1][j] = lattice[i][j];
-//                     lattice[i][j] = 0;
-//                     }
-//                 }
-//             }
-//         }
-//     }
-//     console.log(lattice);
-// }
 
 function canMoveDown(){
     let result=true;
-    let blockLattice = getArrayforBlock(blockType);
+    let blockLattice = activeBlockLattice;
     let blockLastRowIndex = blockLattice.length-1;
     let blockLastRow = blockLattice[blockLastRowIndex];
     let toCheckElements = [];
@@ -362,10 +383,11 @@ function canMoveDown(){
                 toCheckElements[j]=[i,j];
                 break;
             }
+            toCheckElements[j]= [-1,-1];
         }
     }
 
-    if(row+blockLattice.length==13){
+    if(row+blockLattice.length==ROWS){
         result = false;
             return result;
     } else {
@@ -373,9 +395,11 @@ function canMoveDown(){
             var element = toCheckElements[el];
             let i=element[0];
             let j=element[1];
-            if(lattice[row+i][col+j-1]==1){
-                result = false;
-                break;
+            if(i!= -1 && j!= -1){
+                if(lattice[row+i][col+j-1]==1){
+                    result = false;
+                    break;
+                }
             }
         }
     }   
@@ -386,14 +410,14 @@ function canMoveDown(){
 function canMoveSide(side){
     let isRight = side=="right"?true:false;
     let result=true;
-    let blockLattice = getArrayforBlock(blockType);
+    let blockLattice = activeBlockLattice;
     let blockLastRow = blockLattice[blockLattice.length-1];
     let blockColSize = blockLastRow.length;
     let blockRowSize = blockLattice.length;
     var i,j;
     if(isRight){
         lastColIndex = col + blockColSize -2;
-        if(lastColIndex>=9){
+        if(lastColIndex>=COLS-1){
             //right wall
             return false;
         }
@@ -423,6 +447,49 @@ function canMoveSide(side){
         }
 
     }
+}
+
+function rotateBlockLattice(){
+    if(canRotate()){
+        newLattice = getArrayforBlock(blockType,orientation+1)
+        for(var rowT = 0; rowT<newLattice.length;rowT++){
+            for(var colT = 0;colT<newLattice[0].length;colT++){
+                if(activeBlockLattice[rowT][colT] == 1){
+                    lattice[row+rowT-1][col+colT-1] = 0;
+                }
+                if(newLattice[rowT][colT] == 1){
+                    lattice[row+rowT-1][col+colT-1] = 1;
+                }
+            }
+        }
+        activeBlockLattice = newLattice;
+        orientation++;        
+        setTimeout(moveblockDown,1000);
+    }
+    
+
+    //store prev lattice
+    //get new lattice and orientation and check if its clashing with lattice
+    //maybe add canRotate first
+}
+
+function canRotate(){
+    newLattice = getArrayforBlock(blockType,orientation+1)
+    for(var rowT = 0; rowT<newLattice.length;rowT++){
+        for(var colT = 0;colT<newLattice[0].length;colT++){
+            if(lattice[row+rowT-1][col+colT-1] == 1 && newLattice[rowT][colT] == 1){
+                if(activeBlockLattice[rowT][colT] == 1){
+                    continue;
+                } else {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+
+    
+
 }
 
     
