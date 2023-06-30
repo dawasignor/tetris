@@ -54,7 +54,7 @@
   const horizontalUnit = 4;
   const verticalUnit = 8;//TODO var vs let vs const
   const COLS = 18;
-  const ROWS = 20;
+  const ROWS = 19;
 
   const SCALE_FACTOR = 30;
   const BLOCK_HEIGHT = 1;
@@ -89,7 +89,7 @@
   let floor = 10
 
   var lattice;
-  lattice = initLattice(ROWS, COLS);
+  lattice = initLattice(ROWS+3, COLS+3);
   let floorArray = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
   let ActiveBlockId = 1;
   let activeBlock = document.querySelector(".active-block");
@@ -194,7 +194,6 @@
 
 
 
-    console.log(floorArray);
 
     el = document.querySelector(".active-block");
     if (el != null) { el.classList.remove("active-block") }
@@ -335,8 +334,7 @@
     blockColSize = blockLattice[0].length;
     for (var i = (row + blockRowSize - 2); i >= (row - 1); i--) {
       for (var j = (col - 1); j < (col + blockColSize - 1); j++) {
-        console.log("i : " + i + "  j:" + j);
-        if (i != ROWS && lattice[i + 1][j] != 1) {
+        if (lattice[i + 1][j] != 1 && lattice[i][j] !=0) {
           lattice[i + 1][j] = lattice[i][j];
           lattice[i][j] = 0;
         }
@@ -353,11 +351,13 @@
     blockColSize = blockLattice[0].length;
     for (i = (row + blockRowSize - 2); i >= (row - 1); i--) {
       if (right) {
-        if ((col + blockColSize - 1) < COLS) {
-          for (var j = (col + blockColSize - 2); j >= (col - 1); j--) {
-            lattice[i][j + 1] = lattice[i][j];
-            if (j == (col - 1)) {
-              lattice[i][j] = 0;
+        if ((col + getLastColIndex() - 1) < COLS) {
+          for (var j = (col + getLastColIndex() - 1); j >= (col - 1); j--) {
+            if(lattice[i][j]!=0){
+              lattice[i][j + 1] = lattice[i][j];
+              if (j == (col - 1)) {
+                lattice[i][j] = 0;
+              }
             }
           }
         }
@@ -392,7 +392,7 @@
       }
     }
 
-    if (row + blockLattice.length == ROWS) {
+    if (row + getLastRowIndex()  == ROWS) {
       result = false;
       return result;
     } else {
@@ -412,6 +412,34 @@
 
   }
 
+  function getLastColIndex(){
+    let lastColIndex = 0;
+      for(i=0;i<activeBlockLattice.length;i++){
+        for(j=0;j<activeBlockLattice[0].length;j++){
+          if(activeBlockLattice[i][j]==1){
+            if(j>lastColIndex){
+              lastColIndex=j;
+            }
+          }
+        }
+      }
+    return lastColIndex; 
+  }
+
+  function getLastRowIndex(){
+    let lastRowIndex = 0;
+      for(i=0;i<activeBlockLattice.length;i++){
+        for(j=0;j<activeBlockLattice[0].length;j++){
+          if(activeBlockLattice[i][j]==1){
+            if(i>lastRowIndex){
+              lastRowIndex=i;
+            }
+          }
+        }
+      }
+    return lastRowIndex; 
+  }
+
   function canMoveSide(side) {
     let isRight = side == "right" ? true : false;
     let result = true;
@@ -421,7 +449,7 @@
     let blockRowSize = blockLattice.length;
     var i, j;
     if (isRight) {
-      lastColIndex = col + blockColSize - 2;
+      let lastColIndex = col + getLastColIndex() - 1;
       if (lastColIndex >= COLS - 1) {
         //right wall
         return false;
