@@ -1,433 +1,111 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Tetris Example</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-      
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
-      
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-      <link rel="stylesheet" href="tetris.css">
 
-      <script type="text/javascript" src="background.js"></script>
-      <script type="text/javascript" src="logic.js"></script>
-      
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="tetris.css">
+
+  <script type="text/javascript" src="background.js"></script>
+  <script type="text/javascript" src="logic.js"></script>
+
+  <script type="text/javascript" src="constants.js"></script>
+
 </head>
-<body>
-    <div class = "container-fluid p-0">
-        <div class = "row align-items-start">
-            <div id="box1" style="height: 100vh; width: 25vw; background-color:#FF6B6B ;">
-                Score: <p id="Score"></p>
-            </div>
-            <div id="left-wall" style="background-color:black; height: 100vh; width: 5vw;">     
-            </div>
-            <div class="centerBox " style=" background-color:  #9723C9 ;height: 100vh; width: 40vw;">
-                <div class="container-fluid p-0" id="play-area">
-                    
-                </div>
-                <div style="background-color:black; position: absolute; top: 96vh; left: 29vw; height: 4vh; width: 40vw; border-style: dashed; border-width: 1px; padding-left: 0px;" ></div>
-            </div>
-            <div id="right-wall" style="background-color:black; height: 100vh; width: 5vw;">     
-            </div>
 
-            <div class="box3" style=" height: 100vh; width: 25vw; background-color:#FF6B6B;">
-                Press Enter to start!
-            </br>
-                TODO : Leader Board will come here
-            </div>
+<body>
+  <div class="container-fluid p-0">
+    <div class="row align-items-start">
+      <div id="box1" style="height: 100vh; width: 25vw; background-color:#FF6B6B ;">
+        Score: <p id="Score"></p>
+        <div id="gameOverStatus" >         
         </div>
+      </div>
+      <div id="left-wall" style="background-color:black; height: 100vh; width: 5vw;">
+      </div>
+      <div class="centerBox "
+        style=" background-color:  #9723C9 ;height: 100vh; width: 39.6vw; padding-left: 0px; padding-right: 0px;">
+        <canvas id="play-area" class="board"></canvas>
+        <div
+          style="background-color:black; position: absolute; top: 92.5vh; left: 29.3vw; height: 7.5vh; width: 39.7vw;  padding-left: 0px;">
+        </div>
+      </div>
+      <div id="right-wall" style="background-color:black; height: 100vh; width: 5vw;">
+      </div>
+
+      <div class="box3" style=" height: 100vh; width: 25vw; background-color:#FF6B6B;">
+        Press Enter to start!
+        </br>
+      </br>
+      Rows dissapear once a row is completely filled!
+
+      </div>
     </div>
+  </div>
 
 
 </body>
 <script>
-    //constant.js --- parameterized
-    // import startColumn from './constants.js'
-    // console.log(startColumn);
-    const startColumn = 1;
-const leftWallVW = 30;
-const horizontalUnit = 4;
-const verticalUnit = 8;
-    var row = 1;
-    let blockType = 0;
-    let gameOver = false;
-    var col = 1;
-    let floor = 10
-    
-    var lattice;
-    lattice = initLattice();
-    let floorArray =[10,10,10,10,10,10,10,10,10,10]
-    let ActiveBlockId=1;
-    let activeBlock = document.querySelector(".active-block");
-    var gameStart =0;
 
-    drawbg();
+const ctx = document.getElementById("play-area").getContext('2d');
+
+ctx.canvas.width = COLS * SCALE_FACTOR_COLUMN;
+ctx.canvas.height = ROWS * SCALE_FACTOR_ROW;
+
+ctx.scale(SCALE_FACTOR_COLUMN, SCALE_FACTOR_ROW);
+ctx.lineWidth = 0.1;
 
 
-    function start(){
-        gameStart = setInterval(moveblockDown,1000);
-        updateScore()
-    }
-    function end(){
-        gameOver = true;
-        console.log("GAMEOVER!");
-        const gameOverDiv = document.createElement("div");
-        gameOverDiv.innerHTML ="<h3>GAME OVER!</h3>";
-        document.getElementById("box1").append(gameOverDiv);
-        document.getElementById("Score").innerHTML = "<h3>"+(ActiveBlockId-1)+"</h3>";
-        clearInterval(gameTime);
-        clearInterval(gameStart);
-    }
-
-    function updateScore(){
-        document.getElementById("Score").innerHTML = "<h3>"+(ActiveBlockId-1)+"</h3>";
-    }
-
-    const gameTime = setInterval(refreshBlock,100);
-    
+  const gameTime = setInterval(refreshBlock, 100);
 
 
-    window.addEventListener("keydown",keyboardContoller,false);
-    updateActiveBlock();
 
-    function refreshBlock(){ 
-        if(!canMoveDown()){
-            updateActiveBlock();
+  window.addEventListener("keydown", keyboardContoller, false);
+
+
+
+  function keyboardContoller(evt) {
+    event.preventDefault();
+
+    switch (evt.key) {
+      case "ArrowLeft":
+        if (col > 1 && !gameOver && canMoveSide("left")) {
+          updateLattice_side("left");
+          col -= 1;
         }
-    }
-    function isGameOver(){
-            if(canMoveDown()){
-                return false;
-            } else {
-                end();
-                return true;
-            }
-        }
-    function keyboardContoller(evt){
-        event.preventDefault();
-
-        switch(evt.key){
-            case "ArrowLeft":
-                if(col>1 && !gameOver && canMoveSide("left")){
-                    updateLattice_side("left");
-                    col-=1;
-                    //moveblockSide("left");
-                    activeBlock.style.left = ""+(leftWallVW+(col-1)*4)+"vw"; //only if type = square
-                }
-                break;
-            case "ArrowRight":
-            if(col<=9 && !gameOver && canMoveSide("right")){
-                updateLattice_side("right");
-                col+=1; //add move dynamically
-                //moveblockSide("right");
-                activeBlock.style.left = ""+(leftWallVW+(col-1)*4)+"vw"; //only if type = square
-                }
-                break;
-            case "ArrowDown":
-                if(!gameOver){
-                    setTimeout(refreshBlock,10);
-                    moveblockDown();
-                }
-                break;
-            case "Enter":
-                if(ActiveBlockId==2){
-                    start();
-                }
-                break;
-            case " ":
-                console.log("in space");
-            activeBlock.style.transform = "rotate(90deg);";
-                break;
-        }
-        
-
-    }
-    function updateBlockID(){
-        activeBlock = document.querySelector(".active-block");
-        console.log("ID = "+activeBlock.id);
-               
-    }
-    //remove
-    function getAffectedCols(){
-        switch(1){
-        case 1:
-        var cols = [col,col+1];
-        console.log(cols);
-        return cols;
         break;
-
+      case "ArrowRight":
+        if (col <= COLS - 1 && !gameOver && canMoveSide("right")) {
+          updateLattice_side("right");
+          col += 1; //add move dynamically
         }
-
-    }
-    function getFloor(){
-        var cols= getAffectedCols();
-        var min=10;
-        //parse through list of affected cols and update the floorArray
-        cols.forEach((column) => {
-            min = Math.min(min,floorArray[column-1]);    
-        });
-        return min;
-    }
-
-    function updatefloorArray(){
-        var cols= getAffectedCols();
-        var floor = getFloor();
-        console.log("floor : "+floor);
-        floor -=getUpdateForFloor(); //floor array is updated differently for different blocks
-        //parse through list of affected cols and update the floorArray
-        cols.forEach((column) => {
-            floorArray[column-1] = floor;    
-        })
-    }
-    function getUpdateForFloor(){
-        switch(blockType){
-            case 1: return 2; break;
-            case 2: return 4; break;
-            case 3: return 3; break;
-            case 4: return 3; break;
+        break;
+      case "ArrowDown":
+        if (!gameOver) {
+          setTimeout(refreshBlock, 10);
+          moveblockDown();
         }
-        
+        break;
+      case "Enter":
+        if (gameOver) {
+          start();
+          console.log("Game started!");
+        }
+        break;
+      case " ":
+        console.log("in space");
+        rotateBlockLattice();
+        break;
     }
 
-    
-    //update lattice
-    function updateActiveBlock(){
-        
 
-        
-        updatefloorArray();
+  }
 
-        
-        console.log(floorArray);
 
-        floor = floorArray[startColumn];
-        el = document.querySelector(".active-block");
-        if(el != null){el.classList.remove("active-block")}
-        //randomly call shapes
-        //shape 5
-        //
-        ////
-          //
-        //decide the limits and lattice for the game
-        blockType=addBlock();
-        console.log(blockType);
-        //addBlockType1();
-        el = document.querySelector(".active-block");
-        ActiveBlockId++;
-        updateBlockID();
-        updateScore();
-        col = 1;
-        row = 1;
-        updateLattice_newBlock();
-        isGameOver()
-
-        
-    }
-    
-function moveblockDown(){  
-if(canMoveDown()){
-updateLattice_down();  
-console.log("in move")
-activeBlock.style.transform = "translateY("+(row*8)+"vh)";
-row++;
-console.log("Floor " + getFloor() + "  -- Row: "+row);
-} else {
-        refreshBlock();
-    }
-}
-
-function moveblockSide(side){
-    console.log("in move")
-let unit = side=="right"?horizontalUnit:-horizontalUnit;
-activeBlock.style.transform = "translateX("+((col-1)*unit)+"vw)";
-}
-
-function getArrayforBlock(type){
-    let blockLattice = [];
-    switch(type){
-        case 1:
-            blockLattice[0] = [1,1];
-            blockLattice[1] = [1,1];
-            break;
-        case 2:
-            blockLattice[0] = [1];
-            blockLattice[1] = [1];
-            blockLattice[2] = [1];
-            blockLattice[3] = [1];
-            break;
-        case 3:
-            blockLattice[0] = [1,0];
-            blockLattice[1] = [1,0];
-            blockLattice[2] = [1,1];
-            break;
-        case 4:
-            blockLattice[0] = [1,0];
-            blockLattice[1] = [1,1];
-            blockLattice[2] = [1,0];
-            break;            
-    }
-    return blockLattice;
-}
-
-function updateLattice_newBlock(){
-    let blockLattice = getArrayforBlock(blockType);
-    for(var i=0;i<lattice.length;i++){
-        for(var j=0;j<lattice[i].length;j++){
-            if(i<blockLattice.length){
-                if(j<blockLattice[i].length){
-                    lattice[i][j] = blockLattice[i][j];
-                }
-            }
-
-        }
-    }
-    console.log(lattice);
-
-}
-function updateLattice_down(){
-    let blockLattice = getArrayforBlock(blockType);
-    blockRowSize = blockLattice.length;
-    blockColSize = blockLattice[0].length;
-    for(var i=(row+blockRowSize-2);i>=(row-1);i--){
-        for(var j=(col-1);j<(col+blockColSize-1);j++){
-                    console.log("i : "+i+"  j:"+j);
-                    if(i!=11 && lattice[i+1][j]!=1){
-                    lattice[i+1][j] = lattice[i][j];
-                    lattice[i][j] = 0;
-                    }
-        }
-    }
-    console.log(lattice);
-}
-
-function updateLattice_side(side){
-    let right = side=="right"?true:false;
-    let blockLattice = getArrayforBlock(blockType);
-    var i,j;
-    blockRowSize = blockLattice.length;
-    blockColSize = blockLattice[0].length;
-    for(i=(row+blockRowSize-2);i>=(row-1);i--){
-        if(right){
-            if((col+blockColSize-1)<10){
-                for(var j=(col+blockColSize-2);j>=(col-1);j--){
-                    lattice[i][j+1] = lattice[i][j];
-                    if(j==(col-1)){
-                        lattice[i][j]=0;
-                    }
-                }
-            }
-        } else {
-            if(col>1){
-                for(var j=(col-1);j<=(col+blockColSize-2);j++){
-                    lattice[i][j-1] = lattice[i][j];
-                    if(j==(col+blockColSize-2)){
-                        lattice[i][j]=0;
-                    }
-                }
-            }
-        }
-    }
-    console.log(lattice);
-}
-// function updateLattice_down(){
-//     let blockLattice = getArrayforBlock(blockType);
-//     blockRowSize = blockLattice.length;
-//     blockColSize = blockLattice[0].length;
-//     for(var i=(lattice.length-1);i>=0;i--){
-//         for(var j=0;j<lattice[i].length;j++){
-//             if(i>=(row-1) && i<(row+blockRowSize-1) ){
-//                 if(j>=(col-1) && j<(col+blockColSize-1)){
-//                     console.log("i : "+i+"  j:"+j);
-//                     if(i!=11){
-//                     lattice[i+1][j] = lattice[i][j];
-//                     lattice[i][j] = 0;
-//                     }
-//                 }
-//             }
-//         }
-//     }
-//     console.log(lattice);
-// }
-
-function canMoveDown(){
-    let result=true;
-    let blockLattice = getArrayforBlock(blockType);
-    let blockLastRowIndex = blockLattice.length-1;
-    let blockLastRow = blockLattice[blockLastRowIndex];
-    let toCheckElements = [];
-    var i,j;
-    for(j=0;j<=blockLastRow.length;j++){
-        for(i=blockLastRowIndex;i>=0;i--){
-            if(blockLattice[i][j]==1){
-                toCheckElements[j]=[i,j];
-                break;
-            }
-        }
-    }
-
-    if(row+blockLattice.length==13){
-        result = false;
-            return result;
-    } else {
-        for(var el = 0;el<blockLastRow.length;el++){
-            var element = toCheckElements[el];
-            let i=element[0];
-            let j=element[1];
-            if(lattice[row+i][col+j-1]==1){
-                result = false;
-                break;
-            }
-        }
-    }   
-    return result;
-
-}
-
-function canMoveSide(side){
-    let isRight = side=="right"?true:false;
-    let result=true;
-    let blockLattice = getArrayforBlock(blockType);
-    let blockLastRow = blockLattice[blockLattice.length-1];
-    let blockColSize = blockLastRow.length;
-    let blockRowSize = blockLattice.length;
-    var i,j;
-    if(isRight){
-        lastColIndex = col + blockColSize -2;
-        if(lastColIndex>=9){
-            //right wall
-            return false;
-        }
-        else{
-            for(i=row-1; i<=(row+blockRowSize-2);i++){
-                if(lattice[i][lastColIndex] == 1 && lattice[i][lastColIndex+1]==1){
-                    //cant move right because of shapes on right.
-                    return false;
-                }
-            }
-            return true;
-        }
-    } else{
-        lastColIndex = col - 1;
-        if(lastColIndex<=0){
-            //left wall
-            return false;
-        }
-        else{
-            for(i=row-1; i<=(row+blockRowSize-2);i++){
-                if(lattice[i][lastColIndex] == 1 && lattice[i][lastColIndex-1]==1){
-                    //cant move right because of shapes on right.
-                    return false;
-                }
-            }
-            return true;
-        }
-
-    }
-}
-
-    
-
-    
-    
 </script>
+
 </html>
