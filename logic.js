@@ -1,32 +1,16 @@
-//add difficulty level
-const startColumn = 1;
-const leftWallVW = 30;
-const horizontalUnit = 4;
-const verticalUnit = 8;//TODO var vs var vs const
-const COLS = 18;
-const ROWS = 19;
-
-
-const SCALE_FACTOR_COLUMN = 39.6 * screen.width / 1800;
-const SCALE_FACTOR_ROW = 80 * screen.height / 1900;
-const BLOCK_HEIGHT = 1;
-const BLOCK_WIDTH = 1;
-
-
-var orientation = 1;
 
 
 
-
-
-var row = 1;
+var orientation = startOrientation;
+var row = startRow;
 var blockType = 1;
 var gameOver = true;
-var col = 9;
+var col = startColumn;
 var blockColor = 1;
+var downSpeedMS = 750; //changes with difficulty setting
 
 var lattice;
-lattice = initLattice(ROWS + 3, COLS + 3);
+lattice = initLattice(ROWS + latticeExtraAlllowance, COLS + latticeExtraAlllowance);
 var ActiveBlockId = 0;
 var gameStart = 0;
 var activeBlockLattice = getArrayforBlock(blockType, orientation);
@@ -34,20 +18,29 @@ var activeBlockLattice = getArrayforBlock(blockType, orientation);
 
 
 
-
+/* start() : starts or restarts the game
+*   reinitializes : canvas, lattice, blocks, gamestatus and score
+*/
 function start() {
     if(gameStart!=0){
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     }
     document.getElementById("gameOverStatus").innerHTML = "";
-    lattice = initLattice(ROWS + 3, COLS + 3);
-    gameStart = setInterval(moveblockDown, 750);
+    lattice = initLattice(ROWS + latticeExtraAlllowance, COLS + latticeExtraAlllowance);
+    gameStart = setInterval(moveblockDown, downSpeedMS);
     ActiveBlockId = 0;
     gameOver = false;
     updateScore()
     updateActiveBlock();
 
 }
+
+/* end() : ends the game if the last block touches cieling 
+*  adds a Gameover div and clears game progression
+*
+*
+*
+*/
 
 function end() {
     gameOver = true;
@@ -60,18 +53,31 @@ function end() {
     clearInterval(gameStart);
 }
 
-
+/* refreshBlock() : checks if a new block needs to be added
+*
+*
+*
+*/
 function refreshBlock() {
     if (!canMoveDown()) {
         updateActiveBlock();
     }
 }
 
-
+/* updateScore() : updates the score
+*
+*
+*
+*/
 function updateScore() {
     document.getElementById("Score").innerHTML = "<h3>" + (ActiveBlockId) + "</h3>";
 }
 
+/* updateActiveBlock() : adds a new block and reinitializes row, col and orientation
+*
+*
+*
+*/
 function updateActiveBlock() {
 
     el = document.querySelector(".active-block");
@@ -85,9 +91,9 @@ function updateActiveBlock() {
     
     ActiveBlockId++;
     updateScore();
-    col = 9;
-    row = 1;
-    orientation = 1;
+    col = startColumn;
+    row = startRow;
+    orientation = startOrientation;
     updateLattice_newBlock();
     isGameOver()
     drawbg(lattice);
@@ -331,7 +337,7 @@ function isGameOver() {
 }
 
 //=====================Init functions
-
+//Initializes the lattice with ROWSxCOLS of zeroes to clear the blocks
 function initLattice(ROWS, COLS) {
     var lattice = [];
     var i, j;
@@ -345,7 +351,7 @@ function initLattice(ROWS, COLS) {
 }
 
 
-
+//gets the block structure when blocktype and block orientation are passed. Kept as hardcoded as this needs to be rigidly followed
 function getArrayforBlock(type, block_rotation) {
     var blockLattice = [];
     switch (type) {
