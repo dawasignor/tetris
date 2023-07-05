@@ -42,8 +42,45 @@
         Press Enter to start!
         </br>
       </br>
+      </br>
       Rows dissapear once a row is completely filled!
+    </br>
+  </br>
+</br>
+    Instructions:
+    Arrow key left, right and down to move the block in the directions
+  </br>
+  Space bar to rotate the block
+</br>
+</br>
+</br>
+Difficulty Settings
+<form class = "difficultySettings" id = "diffSettings">
+  <input type="radio" id="Easy" name="difficulty" value=750>
+  <label for="Easy">Easy</label><br>
+  <input type="radio" id="Medium" name="difficulty" value=350>
+  <label for="Medium">Medium</label><br>
+  <input type="radio" id="Hard" name="difficulty" value=200>
+  <label for="Hard">Hard</label>
+</form>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
 
+<img src="about_me_icon.png"> 
+<a href="https://medium.com/@vvigneshvar8/about"> About me</a>
       </div>
     </div>
   </div>
@@ -51,7 +88,6 @@
 
 </body>
 <script>
-
 const ctx = document.getElementById("play-area").getContext('2d');
 
 ctx.canvas.width = COLS * SCALE_FACTOR_COLUMN;

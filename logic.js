@@ -7,7 +7,7 @@ var blockType = 1;
 var gameOver = true;
 var col = startColumn;
 var blockColor = 1;
-var downSpeedMS = 750; //changes with difficulty setting
+var downSpeedMS = 0; //changes with difficulty setting
 
 var lattice;
 lattice = initLattice(ROWS + latticeExtraAlllowance, COLS + latticeExtraAlllowance);
@@ -25,6 +25,13 @@ function start() {
     if(gameStart!=0){
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     }
+    if(document.querySelector('input[name="difficulty"]:checked')==null){
+        document.getElementById("diffSettings").classList.add("shake");
+       setTimeout(()=> {document.getElementById("diffSettings").classList.remove("shake");}, 1000);
+
+    }
+    else {
+        downSpeedMS = document.querySelector('input[name="difficulty"]:checked').value;
     document.getElementById("gameOverStatus").innerHTML = "";
     lattice = initLattice(ROWS + latticeExtraAlllowance, COLS + latticeExtraAlllowance);
     gameStart = setInterval(moveblockDown, downSpeedMS);
@@ -32,6 +39,8 @@ function start() {
     gameOver = false;
     updateScore()
     updateActiveBlock();
+    }
+    
 
 }
 
