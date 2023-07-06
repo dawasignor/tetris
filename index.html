@@ -10,9 +10,12 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
   <link rel="stylesheet" href="tetris.css">
   <script type="text/javascript" src="constants.js"></script>
+  <script type="text/javascript" src="nextBlock.js"></script>
 
   <script type="text/javascript" src="background.js"></script>
   <script type="text/javascript" src="logic.js"></script>
+
+
 
 
 
@@ -23,7 +26,11 @@
     <div class="row align-items-start">
       <div id="box1" style="height: 100vh; width: 25vw; background-color:#FF6B6B ;">
         Score: <p id="Score"></p>
-        <div id="gameOverStatus" >         
+        <div id="gameOverStatus">
+        </div>
+        <div id="nextBlockCanvas">
+          <h3>Next Block</h3>
+          <canvas id="nextBlockArea" style="border: 3px; border-style: solid;"></canvas>
         </div>
       </div>
       <div id="left-wall" style="background-color:black; height: 100vh; width: 5vw;">
@@ -41,46 +48,34 @@
       <div class="box3" style=" height: 100vh; width: 25vw; background-color:#FF6B6B;">
         Press Enter to start!
         </br>
-      </br>
-      </br>
-      Rows dissapear once a row is completely filled!
-    </br>
-  </br>
-</br>
-    Instructions:
-    Arrow key left, right and down to move the block in the directions
-  </br>
-  Space bar to rotate the block
-</br>
-</br>
-</br>
-Difficulty Settings
-<form class = "difficultySettings" id = "diffSettings">
-  <input type="radio" id="Easy" name="difficulty" value=750>
-  <label for="Easy">Easy</label><br>
-  <input type="radio" id="Medium" name="difficulty" value=350>
-  <label for="Medium">Medium</label><br>
-  <input type="radio" id="Hard" name="difficulty" value=200>
-  <label for="Hard">Hard</label>
-</form>
-</br>
-</br>
-</br>
-</br>
-</br>
-</br>
-</br>
-</br>
-</br>
-</br>
-</br>
-</br>
-</br>
-</br>
-</br>
+        </br>
+        </br>
+        Rows dissapear once a row is completely filled!
+        </br>
+        </br>
+        </br>
+        Instructions:
+        Arrow key left, right and down to move the block in the directions
+        </br>
+        Space bar to rotate the block
+        </br>
+        </br>
+        </br>
+        Difficulty Settings
+        <form class="difficultySettings" id="diffSettings">
+          <input type="radio" id="Easy" name="difficulty" value=750>
+          <label for="Easy">Easy</label><br>
+          <input type="radio" id="Medium" name="difficulty" value=350>
+          <label for="Medium">Medium</label><br>
+          <input type="radio" id="Hard" name="difficulty" value=200>
+          <label for="Hard">Hard</label>
+        </form>
 
-<img src="about_me_icon.png"> 
-<a href="https://medium.com/@vvigneshvar8/about"> About me</a>
+        <div style=" position: absolute; top: 90vh; left: 75vw;">
+          <img src="about_me_icon.png">
+          <a href="https://medium.com/@vvigneshvar8/about"> About me</a>
+
+        </div>
       </div>
     </div>
   </div>
@@ -88,13 +83,19 @@ Difficulty Settings
 
 </body>
 <script>
-const ctx = document.getElementById("play-area").getContext('2d');
+  const ctx = document.getElementById("play-area").getContext('2d');
+  const nextBlockCtx = document.getElementById("nextBlockArea").getContext('2d');
+  ctx.canvas.width = COLS * SCALE_FACTOR_COLUMN;
+  ctx.canvas.height = ROWS * SCALE_FACTOR_ROW;
 
-ctx.canvas.width = COLS * SCALE_FACTOR_COLUMN;
-ctx.canvas.height = ROWS * SCALE_FACTOR_ROW;
+  ctx.scale(SCALE_FACTOR_COLUMN, SCALE_FACTOR_ROW);
+  ctx.lineWidth = 0.1;
 
-ctx.scale(SCALE_FACTOR_COLUMN, SCALE_FACTOR_ROW);
-ctx.lineWidth = 0.1;
+  nextBlockCtx.canvas.width = 4 * SCALE_FACTOR_COLUMN;
+  nextBlockCtx.canvas.height = 4 * SCALE_FACTOR_ROW;
+
+  nextBlockCtx.scale(SCALE_FACTOR_COLUMN, SCALE_FACTOR_ROW);
+  nextBlockCtx.lineWidth = 0.1;
 
 
   const gameTime = setInterval(refreshBlock, 100);

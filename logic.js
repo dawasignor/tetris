@@ -1,7 +1,7 @@
 
 
 
-var orientation = startOrientation;
+var orientation = 1;
 var row = startRow;
 var blockType = 1;
 var gameOver = true;
@@ -22,25 +22,25 @@ var activeBlockLattice = getArrayforBlock(blockType, orientation);
 *   reinitializes : canvas, lattice, blocks, gamestatus and score
 */
 function start() {
-    if(gameStart!=0){
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    if (gameStart != 0) {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     }
-    if(document.querySelector('input[name="difficulty"]:checked')==null){
+    if (document.querySelector('input[name="difficulty"]:checked') == null) {
         document.getElementById("diffSettings").classList.add("shake");
-       setTimeout(()=> {document.getElementById("diffSettings").classList.remove("shake");}, 1000);
-
+        setTimeout(() => { document.getElementById("diffSettings").classList.remove("shake"); }, 1000);
+        alert("Select difficulty before starting the game");
     }
     else {
         downSpeedMS = document.querySelector('input[name="difficulty"]:checked').value;
-    document.getElementById("gameOverStatus").innerHTML = "";
-    lattice = initLattice(ROWS + latticeExtraAlllowance, COLS + latticeExtraAlllowance);
-    gameStart = setInterval(moveblockDown, downSpeedMS);
-    ActiveBlockId = 0;
-    gameOver = false;
-    updateScore()
-    updateActiveBlock();
+        document.getElementById("gameOverStatus").innerHTML = "";
+        lattice = initLattice(ROWS + latticeExtraAlllowance, COLS + latticeExtraAlllowance);
+        gameStart = setInterval(moveblockDown, downSpeedMS);
+        ActiveBlockId = 0;
+        gameOver = false;
+        updateScore()
+        updateActiveBlock();
     }
-    
+
 
 }
 
@@ -96,13 +96,14 @@ function updateActiveBlock() {
     //
     ////
     //
-    blockType = addBlock();
-    
+    addBlock();
+    orientation = nextBlockOrientation;
+    nextBlock();
+
     ActiveBlockId++;
     updateScore();
     col = startColumn;
     row = startRow;
-    orientation = startOrientation;
     updateLattice_newBlock();
     isGameOver()
     drawbg(lattice);
@@ -125,7 +126,7 @@ function updateLattice_newBlock() {
         for (var j = 0; j < lattice[i].length; j++) {
             if (i < activeBlockLattice.length) {
                 if (j < activeBlockLattice[i].length) {
-                    lattice[i + row - 1][j + col - 1] = blockColor*activeBlockLattice[i][j];
+                    lattice[i + row - 1][j + col - 1] = blockColor * activeBlockLattice[i][j];
                 }
             }
 
@@ -170,7 +171,7 @@ function updateLattice_down() {
     drawbg(lattice);
 }
 
-function updateLattice_side(side) { 
+function updateLattice_side(side) {
     var right = side == "right" ? true : false;
     var blockLattice = activeBlockLattice;
     var i, j;
@@ -191,7 +192,7 @@ function updateLattice_side(side) {
         } else {
             if (col > 1) {
                 for (var j = (col - 1); j <= (col + blockColSize - 2); j++) {
-                    if(!(j==col-1 && lattice[i][j]==0)){
+                    if (!(j == col - 1 && lattice[i][j] == 0)) {
                         lattice[i][j - 1] = lattice[i][j];
                         if (j == (col + blockColSize - 2)) {
                             lattice[i][j] = 0;
